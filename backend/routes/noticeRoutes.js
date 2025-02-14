@@ -5,18 +5,59 @@ const {
   deleteNotice,
   getNotices,
 } = require('../controllers/noticeController');
+const { upload, uploadFile } = require('../controllers/uploadFile');
 
 const router = express.Router();
 
-// View Notices (Anyone)
-router.get('/', authenticate, getNotices);
+// 📌 Log every request to this route
+router.use((req, res, next) => {
+  console.log(`📡 [${req.method}] Request to: ${req.originalUrl}`);
+  console.log('🔹 Headers:', req.headers);
+  console.log('🔹 Body:', req.body);
+  next();
+});
 
-// Add Notice (Admin & Faculty Only)
-router.post('/', authenticate, allowRoles('admin', 'faculty'), createNotice);
+// 📌 Upload Notice File
+router.post(
+  '/upload',
+  (req, res, next) => {
+    console.log('📤 Upload Route Hit!');
+    next();
+  },
+  upload.single('file'),
+  uploadFile
+);
 
-// Delete Notice (Admin & Faculty Only)
+// 📌 View Notices (Anyone) - Supports filtering by year & section
+router.get(
+  '/',
+  (req, res, next) => {
+    console.log('📜 Fetching Notices...');
+    next();
+  },
+  authenticate,
+  getNotices
+);
+
+// 📌 Add Notice (Admin & Faculty Only) - Supports file upload & sections
+router.post(
+  '/',
+  (req, res, next) => {
+    console.log('➕ Creating a new notice...');
+    next();
+  },
+  authenticate,
+  allowRoles('admin', 'faculty'),
+  createNotice
+);
+
+// 📌 Delete Notice (Admin & Faculty Only)
 router.delete(
   '/:id',
+  (req, res, next) => {
+    console.log(`❌ Deleting notice with ID: ${req.params.id}`);
+    next();
+  },
   authenticate,
   allowRoles('admin', 'faculty'),
   deleteNotice

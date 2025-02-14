@@ -5,11 +5,13 @@ const NoticeSchema = new mongoose.Schema({
   content: { type: String, required: true },
   category: {
     type: String,
-    enum: ['Class', 'Common', 'Event'],
+    enum: ['Section-Specific', 'General', 'Event'],
     required: true,
   },
-  section: { type: String }, // Only for Class Notices
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  year: { type: String }, // For class-specific notices
+  sections: [{ type: String }], // Array for multiple sections
+  fileUrl: { type: String }, // URL for uploaded files
+  author: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

@@ -4,7 +4,8 @@ const UserSchema = new mongoose.Schema({
   firebaseUID: { type: String, required: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  section: { type: String, required: false },
+  year: { type: String, required: true }, // Added year field
+  section: { type: String, required: true }, // Made section required
   role: {
     type: String,
     enum: ['student', 'faculty', 'admin'],
@@ -13,4 +14,6 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
 
-module.exports = mongoose.model('User', UserSchema);
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
+
+module.exports = User;

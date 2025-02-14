@@ -10,8 +10,10 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase'; // Ensure correct Firebase import
+import CONFIG from '../config';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -27,12 +29,41 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert('Success', 'Login successful!');
-      navigation.replace('Home'); // Navigate to Home after login
+      const response = await fetch(`${CONFIG.BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log('Login Response:', data); // Debugging
+
+      if (!response.ok) throw new Error(data.message || 'Login failed');
+
+      const { token, user } = data;
+
+      // Store token and role in AsyncStorage
+      if (token) {
+        await AsyncStorage.setItem('authToken', token);
+        await AsyncStorage.setItem('userRole', user.role);
+        await AsyncStorage.setItem('userEmail', user.email);
+        console.log('Stored userEmail:', user.email);
+      } else {
+        throw new Error('No token received from server.');
+      }
+
+      // Navigate based on role
+      if (user.role === 'admin') {
+        navigation.replace('AdminDashboard');
+      } else if (user.role === 'faculty') {
+        navigation.replace('FacultyDashboard');
+      } else {
+        navigation.replace('StudentDashboard');
+      }
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     }
+
     setLoading(false);
   };
 
@@ -133,3 +164,4 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+//No it seems fine, lets now design the adminDashboard.js

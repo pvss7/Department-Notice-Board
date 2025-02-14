@@ -1,11 +1,16 @@
 const admin = require('../config/firebase');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/user');
 
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, year, section } = req.body;
+
+    // Validate required fields
+    if (!year || !section) {
+      return res.status(400).json({ message: 'Year and section are required' });
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -17,12 +22,14 @@ exports.registerUser = async (req, res) => {
       displayName: name,
     });
 
-    // Save user in MongoDB (No section required)
+    // Save user in MongoDB
     const newUser = new User({
       firebaseUID: userRecord.uid,
       name,
       email,
       role: role || 'student', // Default role to 'student' if not provided
+      year, // Store year
+      section, // Store section
       password: hashedPassword,
     });
 
@@ -68,6 +75,8 @@ exports.loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        year: user.year,
+        section: user.section,
       },
     });
   } catch (error) {
