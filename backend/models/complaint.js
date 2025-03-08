@@ -1,7 +1,12 @@
 const mongoose = require('mongoose');
 
 const ComplaintSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Student who raised complaint
+  faculty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  }, // Faculty assigned
   title: { type: String, required: true },
   description: { type: String, required: true },
   status: {

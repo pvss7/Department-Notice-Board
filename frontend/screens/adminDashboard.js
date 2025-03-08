@@ -19,7 +19,7 @@ const AdminDashboard = () => {
     },
     {
       title: 'View Complaints',
-      screen: 'ViewComplaints',
+      screen: 'ViewAllComplaints',
       animation: require('../assets/complaint.json'),
     },
     {

@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/user');
 
 exports.getUserByUID = async (req, res) => {
   try {
@@ -20,6 +20,22 @@ exports.getUserByUID = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ✅ New function to fetch faculty users
+exports.getFacultyUsers = async (req, res) => {
+  try {
+    const facultyList = await User.find({ role: 'faculty' }).select('name _id');
+
+    if (!facultyList.length) {
+      return res.status(404).json({ message: 'No faculty members found' });
+    }
+
+    res.json(facultyList);
+  } catch (error) {
+    console.error('Error fetching faculty members:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

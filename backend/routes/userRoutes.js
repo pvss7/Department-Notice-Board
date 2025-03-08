@@ -1,8 +1,12 @@
 const express = require('express');
-const { getUserByUID } = require('../controllers/userController');
+const {
+  getUserByUID,
+  getFacultyUsers,
+} = require('../controllers/userController');
 
 const router = express.Router();
 
-router.get('/:uid', getUserByUID); // Route to fetch user details by Firebase UID
+router.get('/user/:uid', getUserByUID);
+router.get('/faculty', getFacultyUsers); // ✅ New route to get faculty members
 
 module.exports = router;

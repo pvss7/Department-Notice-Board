@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
@@ -19,6 +20,7 @@ const SignupScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [year, setYear] = useState('');
   const [section, setSection] = useState('');
+  const [isFaculty, setIsFaculty] = useState(false); // Toggle for Faculty
   const [loading, setLoading] = useState(false);
 
   // Section options based on year
@@ -31,38 +33,66 @@ const SignupScreen = () => {
   };
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword || !year || !section) {
+    console.log('Name:', name);
+    console.log('Email:', email);
+    console.log('Password:', password);
+    console.log('Confirm Password:', confirmPassword);
+    console.log('isFaculty:', isFaculty);
+    console.log('Year:', year);
+    console.log('Section:', section);
+
+    if (!name || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'All fields are required!');
+      console.log('Error: Missing required fields');
+      return;
+    }
+
+    if (!isFaculty && (!year || !section)) {
+      Alert.alert('Error', 'Year and Section are required for students!');
+      console.log('Error: Year or Section missing for student');
       return;
     }
 
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match!');
+      console.log('Error: Password mismatch');
       return;
+    }
+
+    const userData = {
+      name,
+      email,
+      password,
+      role: isFaculty ? 'faculty' : 'student',
+    };
+
+    if (!isFaculty) {
+      userData.year = year;
+      userData.section = section;
+    } else {
+      console.log('Faculty registration - not adding year and section');
     }
 
     setLoading(true);
     try {
+      console.log('Sending userData:', JSON.stringify(userData));
       const response = await fetch(`${CONFIG.BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          year,
-          section,
-          role: 'student',
-        }),
+        body: JSON.stringify(userData),
       });
 
       const data = await response.json();
+      console.log('Response received:', data);
+
       if (!response.ok) throw new Error(data.message || 'Registration failed');
 
       Alert.alert('Success', 'Account created successfully!');
+      console.log('Registration successful');
       navigation.replace('Login');
     } catch (error) {
       Alert.alert('Error', error.message);
+      console.log('Registration failed:', error.message);
     }
     setLoading(false);
   };
@@ -99,38 +129,56 @@ const SignupScreen = () => {
         style={styles.input}
       />
 
-      {/* Year Picker */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={year}
-          onValueChange={(itemValue) => {
-            setYear(itemValue);
-            setSection(''); // Reset section when year changes
+      {/* Faculty Toggle */}
+      <View style={styles.toggleContainer}>
+        <Text style={styles.toggleText}>Register as Faculty</Text>
+        <Switch
+          value={isFaculty}
+          onValueChange={(value) => {
+            setIsFaculty(value);
+            if (value) {
+              setYear('');
+              setSection('');
+            }
           }}
-          style={styles.picker}
-        >
-          <Picker.Item label="Select Year" value="" />
-          <Picker.Item label="1st Year" value="1" />
-          <Picker.Item label="2nd Year" value="2" />
-          <Picker.Item label="3rd Year" value="3" />
-          <Picker.Item label="4th Year" value="4" />
-        </Picker>
+        />
       </View>
 
-      {/* Section Picker */}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={section}
-          onValueChange={(itemValue) => setSection(itemValue)}
-          style={styles.picker}
-          enabled={year !== ''}
-        >
-          <Picker.Item label="Select Section" value="" />
-          {getSectionOptions().map((sec) => (
-            <Picker.Item key={sec} label={sec} value={sec} />
-          ))}
-        </Picker>
-      </View>
+      {/* Year & Section Pickers (Only for Students) */}
+      {!isFaculty && (
+        <>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={year}
+              onValueChange={(itemValue) => {
+                setYear(itemValue);
+                setSection('');
+              }}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Year" value="" />
+              <Picker.Item label="1st Year" value="1" />
+              <Picker.Item label="2nd Year" value="2" />
+              <Picker.Item label="3rd Year" value="3" />
+              <Picker.Item label="4th Year" value="4" />
+            </Picker>
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={section}
+              onValueChange={(itemValue) => setSection(itemValue)}
+              style={styles.picker}
+              enabled={year !== ''}
+            >
+              <Picker.Item label="Select Section" value="" />
+              {getSectionOptions().map((sec) => (
+                <Picker.Item key={sec} label={sec} value={sec} />
+              ))}
+            </Picker>
+          </View>
+        </>
+      )}
 
       <TouchableOpacity onPress={handleRegister} style={styles.button}>
         {loading ? (
@@ -191,6 +239,19 @@ const styles = {
   picker: {
     width: '100%',
     height: 50,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 12,
+    paddingHorizontal: 10,
+  },
+  toggleText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
   },
   button: {
     width: '100%',

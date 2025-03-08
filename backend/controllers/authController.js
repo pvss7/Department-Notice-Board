@@ -8,7 +8,7 @@ exports.registerUser = async (req, res) => {
     const { name, email, password, role, year, section } = req.body;
 
     // Validate required fields
-    if (!year || !section) {
+    if (role === 'student' && (!year || !section)) {
       return res.status(400).json({ message: 'Year and section are required' });
     }
 

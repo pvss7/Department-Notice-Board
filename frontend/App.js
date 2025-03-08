@@ -9,6 +9,11 @@ import AdminDashboard from './screens/adminDashboard';
 import FacultyDashboard from './screens/facultyDashboard';
 import StudentDashboard from './screens/studentDashboard';
 import AddNotice from './screens/addNotice';
+import NoticeScreen from './screens/noticeScreen';
+import ComplaintScreen from './screens/complaintScreen';
+import AddComplaint from './screens/addComplaint';
+import ViewComplaints from './screens/viewComplaints';
+import ViewAllComplaints from './screens/viewAllComplaints';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +33,11 @@ export default function App() {
         <Stack.Screen name="FacultyDashboard" component={FacultyDashboard} />
         <Stack.Screen name="StudentDashboard" component={StudentDashboard} />
         <Stack.Screen name="AddNotice" component={AddNotice} />
+        <Stack.Screen name="NoticeScreen" component={NoticeScreen} />
+        <Stack.Screen name="ComplaintScreen" component={ComplaintScreen} />
+        <Stack.Screen name="AddComplaint" component={AddComplaint} />
+        <Stack.Screen name="ViewComplaints" component={ViewComplaints} />
+        <Stack.Screen name="ViewAllComplaints" component={ViewAllComplaints} />
       </Stack.Navigator>
     </NavigationContainer>
   );

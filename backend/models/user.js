@@ -4,8 +4,18 @@ const UserSchema = new mongoose.Schema({
   firebaseUID: { type: String, required: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  year: { type: String, required: true }, // Added year field
-  section: { type: String, required: true }, // Made section required
+  year: {
+    type: String,
+    required: function () {
+      return this.get('role') === 'student'; // Fix for Mongoose field reference issue
+    },
+  },
+  section: {
+    type: String,
+    required: function () {
+      return this.get('role') === 'student';
+    },
+  },
   role: {
     type: String,
     enum: ['student', 'faculty', 'admin'],

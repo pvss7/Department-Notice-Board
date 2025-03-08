@@ -4,17 +4,13 @@ const {
   createComplaint,
   getComplaints,
   resolveComplaint,
+  getFacultyComplaints,
 } = require('../controllers/complaintController');
 
 const router = express.Router();
 
 // Students can add complaints
-router.post(
-  '/',
-  authenticate,
-  allowRoles('student', 'faculty', 'admin'),
-  createComplaint
-);
+router.post('/', authenticate, allowRoles('student'), createComplaint);
 
 // Admin & Faculty can resolve complaints
 router.put(
@@ -24,7 +20,15 @@ router.put(
   resolveComplaint
 );
 
-// Everyone can view complaints
+// Admin can view all complaints, Faculty sees only assigned complaints, Students see their own complaints
 router.get('/', authenticate, getComplaints);
+
+// Faculty can view complaints assigned to them
+router.get(
+  '/faculty',
+  authenticate,
+  allowRoles('faculty'),
+  getFacultyComplaints
+);
 
 module.exports = router;
