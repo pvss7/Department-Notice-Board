@@ -11,6 +11,7 @@ exports.getUserByUID = async (req, res) => {
     }
 
     res.json({
+      _id: user._id,
       uid: user.firebaseUID,
       name: user.name,
       email: user.email,

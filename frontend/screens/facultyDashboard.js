@@ -27,7 +27,7 @@ const FacultyDashboard = () => {
       {/* View My Notices */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate('MyNotices')}
+        onPress={() => navigation.navigate('ViewMyNotices')}
       >
         <LottieView
           source={require('../assets/my_notices.json')}
@@ -55,7 +55,7 @@ const FacultyDashboard = () => {
       {/* View All Notices */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate('AllNotices')}
+        onPress={() => navigation.navigate('ViewNotices')}
       >
         <LottieView
           source={require('../assets/view.json')}

@@ -71,6 +71,7 @@ exports.loginUser = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
+        _id: user._id,
         firebaseUID: user.firebaseUID,
         name: user.name,
         email: user.email,

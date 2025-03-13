@@ -1,6 +1,7 @@
 const Notice = require('../models/notice');
 
 exports.createNotice = async (req, res) => {
+  console.log('Received Body:', req.body);
   try {
     const { title, content, category, year, sections, fileUrl } = req.body;
 
@@ -33,9 +34,8 @@ exports.createNotice = async (req, res) => {
       year: category === 'Class' ? year : null,
       sections: category === 'Class' ? finalSections : null,
       fileUrl: fileUrl || null,
-      createdBy: req.user.id,
+      author: req.body.author, // Ensure this is saved
     });
-
     await newNotice.save();
     res.status(201).json({ message: 'Notice created successfully', newNotice });
   } catch (error) {
@@ -67,6 +67,25 @@ exports.getNotices = async (req, res) => {
     if (section) query.sections = { $in: [section] };
 
     const notices = await Notice.find(query);
+    res.json(notices);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+exports.getNoticesByFaculty = async (req, res) => {
+  try {
+    const { author } = req.query;
+
+    if (!author) {
+      return res.status(400).json({ message: 'Author email is required' });
+    }
+
+    const notices = await Notice.find({ author });
+
+    if (!notices.length) {
+      return res.status(404).json({ message: 'No notices found' });
+    }
+
     res.json(notices);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -42,12 +42,23 @@ const LoginScreen = () => {
 
       const { token, user } = data;
 
-      // Store token and role in AsyncStorage
+      // Store token and user info
       if (token) {
         await AsyncStorage.setItem('authToken', token);
         await AsyncStorage.setItem('userRole', user.role);
         await AsyncStorage.setItem('userEmail', user.email);
+        await AsyncStorage.setItem('userId', user._id); // ✅ Ensure ID is stored
+
         console.log('Stored userEmail:', user.email);
+        console.log('Stored Id:', user._id);
+
+        // 🔍 Verify `userId` immediately after storing
+        const storedUserId = await AsyncStorage.getItem('userId');
+        console.log('Retrieved User ID:', storedUserId);
+
+        if (!storedUserId) {
+          throw new Error('Failed to store User ID in AsyncStorage');
+        }
       } else {
         throw new Error('No token received from server.');
       }
@@ -61,6 +72,7 @@ const LoginScreen = () => {
         navigation.replace('StudentDashboard');
       }
     } catch (error) {
+      console.error('Login Error:', error);
       Alert.alert('Login Failed', error.message);
     }
 

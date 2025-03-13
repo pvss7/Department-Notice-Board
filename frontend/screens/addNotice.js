@@ -157,9 +157,8 @@ const AddNotice = () => {
           : null,
       fileUrl: fileUrl || null,
       author: userEmail,
-      role,
     };
-
+    console.log('Notice Data Being Sent:', JSON.stringify(noticeData, null, 2));
     try {
       const response = await fetch(`${CONFIG.BASE_URL}/api/notices`, {
         method: 'POST',

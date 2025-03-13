@@ -103,3 +103,32 @@ exports.getFacultyComplaints = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+exports.getComplaintById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the complaint by ID and populate relevant fields
+    const complaint = await Complaint.findById(id)
+      .populate('user', 'name email')
+      .populate('faculty', 'name email');
+
+    if (!complaint) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    // Ensure the user has permission to view the complaint
+    if (
+      req.user.role !== 'admin' &&
+      req.user.id !== complaint.user._id.toString() &&
+      req.user.id !== complaint.faculty._id.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: 'Unauthorized to view this complaint' });
+    }
+
+    res.json(complaint);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

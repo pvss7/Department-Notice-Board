@@ -5,6 +5,7 @@ const {
   getComplaints,
   resolveComplaint,
   getFacultyComplaints,
+  getComplaintById, // Import new function
 } = require('../controllers/complaintController');
 
 const router = express.Router();
@@ -30,5 +31,8 @@ router.get(
   allowRoles('faculty'),
   getFacultyComplaints
 );
+
+// 📌 Route to get a specific complaint by ID
+router.get('/:id', authenticate, getComplaintById);
 
 module.exports = router;

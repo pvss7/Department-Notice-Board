@@ -14,6 +14,9 @@ import ComplaintScreen from './screens/complaintScreen';
 import AddComplaint from './screens/addComplaint';
 import ViewComplaints from './screens/viewComplaints';
 import ViewAllComplaints from './screens/viewAllComplaints';
+import ViewMyNotices from './screens/viewMyNotices';
+import ViewNotices from './screens/viewNotices';
+import ComplaintDetails from './screens/complaintDetails';
 
 const Stack = createStackNavigator();
 
@@ -38,6 +41,9 @@ export default function App() {
         <Stack.Screen name="AddComplaint" component={AddComplaint} />
         <Stack.Screen name="ViewComplaints" component={ViewComplaints} />
         <Stack.Screen name="ViewAllComplaints" component={ViewAllComplaints} />
+        <Stack.Screen name="ViewMyNotices" component={ViewMyNotices} />
+        <Stack.Screen name="ViewNotices" component={ViewNotices} />
+        <Stack.Screen name="ComplaintDetails" component={ComplaintDetails} />
       </Stack.Navigator>
     </NavigationContainer>
   );

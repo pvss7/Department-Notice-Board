@@ -6,8 +6,11 @@ const {
   getNotices,
 } = require('../controllers/noticeController');
 const { upload, uploadFile } = require('../controllers/uploadFile');
+const { getNoticesByFaculty } = require('../controllers/noticeController');
 
 const router = express.Router();
+
+// Faculty can view their own notices
 
 // 📌 Log every request to this route
 router.use((req, res, next) => {
@@ -38,7 +41,12 @@ router.get(
   authenticate,
   getNotices
 );
-
+router.get(
+  '/my-notices',
+  authenticate,
+  allowRoles('faculty'),
+  getNoticesByFaculty
+);
 // 📌 Add Notice (Admin & Faculty Only) - Supports file upload & sections
 router.post(
   '/',
