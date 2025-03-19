@@ -17,6 +17,7 @@ import ViewAllComplaints from './screens/viewAllComplaints';
 import ViewMyNotices from './screens/viewMyNotices';
 import ViewNotices from './screens/viewNotices';
 import ComplaintDetails from './screens/complaintDetails';
+import PermissionControl from './screens/permissionControl';
 
 const Stack = createStackNavigator();
 
@@ -44,6 +45,7 @@ export default function App() {
         <Stack.Screen name="ViewMyNotices" component={ViewMyNotices} />
         <Stack.Screen name="ViewNotices" component={ViewNotices} />
         <Stack.Screen name="ComplaintDetails" component={ComplaintDetails} />
+        <Stack.Screen name="PermissionControl" component={PermissionControl}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

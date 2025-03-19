@@ -21,9 +21,11 @@ const categoryColors = {
 const StudentDashboard = ({ navigation }) => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [canAddNotices, setCanAddNotices] = useState(false); // State to store permission
 
   useEffect(() => {
     fetchRecentNotices();
+    checkNoticePermission();
   }, []);
 
   const fetchRecentNotices = async () => {
@@ -57,7 +59,36 @@ const StudentDashboard = ({ navigation }) => {
     setLoading(false);
   };
 
-  // Navigate to NoticeScreen when a notice is clicked
+  const checkNoticePermission = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const studentId = await AsyncStorage.getItem('userId'); // Assuming userId is stored
+      if (!token || !studentId) {
+        console.error('Missing authentication details');
+        return;
+      }
+
+      const response = await fetch(
+        `${CONFIG.BASE_URL}/api/user/check-notice-permission/${studentId}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setCanAddNotices(data.canAddNotices);
+      } else {
+        console.error('Error checking permission:', data.message);
+      }
+    } catch (error) {
+      console.error('Error checking permission:', error);
+    }
+  };
+
   const handleNoticePress = (notice) => {
     navigation.navigate('NoticeScreen', { notice });
   };
@@ -87,7 +118,6 @@ const StudentDashboard = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Scrollable Notices Section */}
       <View style={styles.noticesContainer}>
         <Text style={styles.header}>Recent Notices</Text>
         {loading ? (
@@ -100,7 +130,6 @@ const StudentDashboard = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
           />
         )}
-        {/* View All Notices Text Etched onto the Section */}
         <TouchableOpacity
           onPress={() => navigation.navigate('AllNotices')}
           style={styles.viewAllWrapper}
@@ -109,7 +138,6 @@ const StudentDashboard = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Dashboard Blocks */}
       <ScrollView style={styles.dashboardBlocks}>
         <View style={styles.row}>
           <DashboardBlock
@@ -131,6 +159,16 @@ const StudentDashboard = ({ navigation }) => {
             onPress={() => navigation.navigate('Resources')}
           />
         </View>
+
+        {/* Conditionally Render Add Notice Button */}
+        {canAddNotices && (
+          <TouchableOpacity
+            style={styles.addNoticeButton}
+            onPress={() => navigation.navigate('AddNotice')}
+          >
+            <Text style={styles.addNoticeText}>Add Notice</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
@@ -225,6 +263,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#444',
+  },
+  addNoticeButton: {
+    marginTop: 20,
+    backgroundColor: '#007BFF',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  addNoticeText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
