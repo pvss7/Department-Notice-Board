@@ -33,30 +33,27 @@ exports.createComplaint = async (req, res) => {
 // 📌 Resolve a complaint (Faculty resolves a complaint)
 exports.resolveComplaint = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { resolutionMessage } = req.body;
+    if (!resolutionMessage) {
+      return res.status(400).json({ message: 'Resolution message is required' });
+    }
 
-    // Check if the complaint exists
-    const complaint = await Complaint.findById(id);
+    const complaint = await Complaint.findById(req.params.id);
     if (!complaint) {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
-    // Only assigned faculty or admin can resolve the complaint
-    if (
-      req.user.role !== 'admin' &&
-      req.user.id !== complaint.faculty.toString()
-    ) {
-      return res
-        .status(403)
-        .json({ message: 'Unauthorized to resolve this complaint' });
-    }
-
     complaint.status = 'Resolved';
+    complaint.resolutionMessage = resolutionMessage; // Ensure this field is being updated
+
     await complaint.save();
 
-    res.json({ message: 'Complaint resolved successfully' });
+    res.status(200).json({
+      message: 'Complaint resolved successfully',
+      resolutionMessage: complaint.resolutionMessage, // Return updated message
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || 'Internal Server Error' });
   }
 };
 
