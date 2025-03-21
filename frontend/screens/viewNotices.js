@@ -28,16 +28,16 @@ const ViewNotices = () => {
         Alert.alert('Error', 'User not authenticated');
         return;
       }
-
-      const response = await fetch(`${CONFIG.BASE_URL}/api/notices`, {
+  
+      const response = await fetch(`${CONFIG.BASE_URL}/api/notices/all`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.message || 'Failed to fetch notices');
-
+  
       setNotices(data);
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -45,6 +45,7 @@ const ViewNotices = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <View style={styles.container}>

@@ -141,7 +141,7 @@ const StudentDashboard = ({ navigation }) => {
           />
         )}
         <TouchableOpacity
-          onPress={() => navigation.navigate('AllNotices')}
+          onPress={() => navigation.navigate('AllStudentNotices')}
           style={styles.viewAllWrapper}
         >
           <Text style={styles.viewAllText}>View All</Text>

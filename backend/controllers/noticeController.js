@@ -99,7 +99,6 @@ exports.getNotices = async (req, res) => {
 };
 
 
-
 exports.getNoticesByFaculty = async (req, res) => {
   try {
     const { author } = req.query;
@@ -119,3 +118,14 @@ exports.getNoticesByFaculty = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+exports.getAllNotices = async (req, res) => {
+  try {
+    console.log('📜 Fetching all notices...');
+    const notices = await Notice.find().sort({ createdAt: -1 });
+    res.json(notices);
+  } catch (error) {
+    console.error('Error fetching all notices:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+

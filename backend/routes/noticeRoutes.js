@@ -7,6 +7,8 @@ const {
 } = require('../controllers/noticeController');
 const { upload, uploadFile } = require('../controllers/uploadFile');
 const { getNoticesByFaculty } = require('../controllers/noticeController');
+const {getAllNotices} = require('../controllers/noticeController')
+
 
 const router = express.Router();
 
@@ -69,6 +71,17 @@ router.delete(
   authenticate,
   allowRoles('admin', 'faculty'),
   deleteNotice
+);
+
+// 📌 Fetch All Notices (For ViewNotices Screen)
+router.get(
+  '/all',
+  (req, res, next) => {
+    console.log('📜 Fetching All Notices...');
+    next();
+  },
+  authenticate,
+  getAllNotices
 );
 
 module.exports = router;
