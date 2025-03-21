@@ -60,18 +60,46 @@ exports.deleteNotice = async (req, res) => {
 exports.getNotices = async (req, res) => {
   try {
     const { year, section } = req.query;
-    let query = {};
+    console.log('Received Query Params:', { year, section });
 
-    // Filter by year & section if provided
-    if (year) query.year = year;
-    if (section) query.sections = { $in: [section] };
+    if (!year || !section) {
+      return res.status(400).json({ message: 'Year and section are required' });
+    }
 
-    const notices = await Notice.find(query);
+    // Convert numeric year into "1st Year", "2nd Year", etc.
+    const yearMapping = {
+      "1": "1st Year",
+      "2": "2nd Year",
+      "3": "3rd Year",
+      "4": "4th Year"
+    };
+
+    const formattedYear = yearMapping[year]; // Convert received year to proper format
+    if (!formattedYear) {
+      return res.status(400).json({ message: 'Invalid year' });
+    }
+
+    let query = {
+      $or: [
+        { category: { $ne: 'Class' } }, // Fetch non-class notices (Events, General, etc.)
+        { year: formattedYear, sections: section } // Fetch class-specific notices
+      ]
+    };
+
+    console.log('MongoDB Query:', JSON.stringify(query, null, 2));
+
+    const notices = await Notice.find(query).sort({ createdAt: -1 });
+    console.log('Retrieved Notices:', notices);
+
     res.json(notices);
   } catch (error) {
+    console.error('Error fetching notices:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
 exports.getNoticesByFaculty = async (req, res) => {
   try {
     const { author } = req.query;

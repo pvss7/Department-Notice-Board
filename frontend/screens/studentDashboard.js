@@ -21,7 +21,7 @@ const categoryColors = {
 const StudentDashboard = ({ navigation }) => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [canAddNotices, setCanAddNotices] = useState(false); // State to store permission
+  const [canAddNotices, setCanAddNotices] = useState(false); 
 
   useEffect(() => {
     fetchRecentNotices();
@@ -32,37 +32,47 @@ const StudentDashboard = ({ navigation }) => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        console.error('No authentication token found');
+      const year = await AsyncStorage.getItem('studentYear');
+      const section = await AsyncStorage.getItem('studentSection');
+  
+      console.log("Fetching Notices with:", { year, section, token });
+  
+      if (!token || !year || !section) {
+        console.error("Missing auth details or student info");
         return;
       }
-
-      const response = await fetch(`${CONFIG.BASE_URL}/api/notices`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+  
+      const response = await fetch(
+        `${CONFIG.BASE_URL}/api/notices?year=${year}&section=${section}`,
+        {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
       const data = await response.json();
+      console.log("API Response:", data);
+  
       if (response.ok) {
         const sortedNotices = data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        setNotices(sortedNotices.slice(0, 5)); // Show latest 5 notices
+        setNotices(sortedNotices.slice(0, 5));
       } else {
-        console.error('Error fetching notices:', data.message);
+        console.error("Error fetching notices:", data.message);
       }
     } catch (error) {
-      console.error('Error fetching notices:', error);
+      console.error("Error fetching notices:", error);
     }
     setLoading(false);
   };
+  
+  
 
   const checkNoticePermission = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const studentId = await AsyncStorage.getItem('userId'); // Assuming userId is stored
+      const studentId = await AsyncStorage.getItem('userId'); 
       if (!token || !studentId) {
         console.error('Missing authentication details');
         return;
@@ -160,7 +170,6 @@ const StudentDashboard = ({ navigation }) => {
           />
         </View>
 
-        {/* Conditionally Render Add Notice Button */}
         {canAddNotices && (
           <TouchableOpacity
             style={styles.addNoticeButton}

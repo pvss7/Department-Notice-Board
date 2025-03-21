@@ -52,6 +52,14 @@ const LoginScreen = () => {
         console.log('Stored userEmail:', user.email);
         console.log('Stored Id:', user._id);
 
+        // Store student-specific data (year and section) if user is a student
+        if (user.role === 'student') {
+          await AsyncStorage.setItem('studentYear', user.year || '');
+          await AsyncStorage.setItem('studentSection', user.section || '');
+          console.log('Stored Student Year:', user.year);
+          console.log('Stored Student Section:', user.section);
+        }
+
         // 🔍 Verify `userId` immediately after storing
         const storedUserId = await AsyncStorage.getItem('userId');
         console.log('Retrieved User ID:', storedUserId);
@@ -176,4 +184,3 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
-//No it seems fine, lets now design the adminDashboard.js

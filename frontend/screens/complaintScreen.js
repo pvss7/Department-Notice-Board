@@ -86,6 +86,13 @@ const ComplaintScreen = () => {
                 Status:{' '}
                 <Text style={{ fontWeight: 'bold' }}>{item.status}</Text>
               </Text>
+
+              {/* Show resolution message only for resolved complaints */}
+              {item.status === 'Resolved' && item.resolutionMessage && (
+                <Text style={styles.resolutionMessage}>
+                  Resolution: {item.resolutionMessage}
+                </Text>
+              )}
             </View>
           )}
         />
@@ -142,6 +149,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6200EE',
     marginTop: 8,
+  },
+  resolutionMessage: {
+    fontSize: 14,
+    color: 'green',
+    marginTop: 5,
+    fontWeight: 'bold',
   },
   floatingButton: {
     position: 'absolute',

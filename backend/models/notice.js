@@ -5,7 +5,7 @@ const NoticeSchema = new mongoose.Schema({
   content: { type: String, required: true },
   category: {
     type: String,
-    enum: ['Section-Specific', 'General', 'Event'],
+    enum: ['Class', 'General', 'Event'],
     required: true,
   },
   year: { type: String }, // For class-specific notices
