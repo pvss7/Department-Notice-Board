@@ -1,4 +1,6 @@
 const Notice = require('../models/notice');
+const FCMToken = require('../models/fcmTokenModel');
+const admin = require('../config/firebase'); // Firebase Admin SDK setup
 
 exports.createNotice = async (req, res) => {
   console.log('Received Body:', req.body);
@@ -7,26 +9,20 @@ exports.createNotice = async (req, res) => {
 
     // Ensure required fields are present
     if (!title || !content || !category) {
-      return res
-        .status(400)
-        .json({ message: 'Title, content, and category are required' });
+      return res.status(400).json({ message: 'Title, content, and category are required' });
     }
 
     // Validate year & section for Section-Specific Notices
     let finalSections = null;
     if (category === 'Class') {
-      if (!year)
-        return res
-          .status(400)
-          .json({ message: 'Year is required for section-specific notices' });
+      if (!year) return res.status(400).json({ message: 'Year is required for section-specific notices' });
       if (!sections || !Array.isArray(sections))
         return res.status(400).json({ message: 'Sections must be an array' });
 
-      finalSections = sections.includes('All')
-        ? ['A', 'B', 'C', 'D', 'E']
-        : sections;
+      finalSections = sections.includes('All') ? ['A', 'B', 'C', 'D', 'E'] : sections;
     }
 
+    // Save notice to database
     const newNotice = new Notice({
       title,
       content,
@@ -36,10 +32,40 @@ exports.createNotice = async (req, res) => {
       fileUrl: fileUrl || null,
       author: req.body.author, // Ensure this is saved
     });
+
     await newNotice.save();
-    res.status(201).json({ message: 'Notice created successfully', newNotice });
+
+    // Fetch relevant FCM tokens based on category
+    let tokens;
+    if (category === 'Class') {
+      // Fetch tokens of students in the specific year & section
+      tokens = await FCMToken.find({ year, section: { $in: finalSections } }).select('token');
+    } else {
+      // Fetch all users' tokens for general/event notices
+      tokens = await FCMToken.find().select('token');
+    }
+
+    // Send push notification if there are tokens
+    if (tokens.length > 0) {
+      const tokenList = tokens.map((t) => t.token);
+
+      const message = {
+        notification: {
+          title: '📢 New Notice Posted!',
+          body: `${title} - ${content.substring(0, 50)}...`, // Short preview
+        },
+        tokens: tokenList,
+      };
+
+      admin.messaging().sendEachForMulticast(message)
+        .then((response) => console.log('📲 Push Notification Sent:', response))
+        .catch((error) => console.error('⚠️ FCM Error:', error));
+    }
+
+    res.status(201).json({ message: 'Notice created and notifications sent', newNotice });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('⚠️ Error creating notice:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -98,7 +124,6 @@ exports.getNotices = async (req, res) => {
   }
 };
 
-
 exports.getNoticesByFaculty = async (req, res) => {
   try {
     const { author } = req.query;
@@ -118,6 +143,7 @@ exports.getNoticesByFaculty = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 exports.getAllNotices = async (req, res) => {
   try {
     console.log('📜 Fetching all notices...');
@@ -128,4 +154,3 @@ exports.getAllNotices = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

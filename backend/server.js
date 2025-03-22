@@ -6,7 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const noticeRoutes = require('./routes/noticeRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const userRoutes = require('./routes/userRoutes');
-
+const fcmRoutes = require('./routes/fcmRoutes');
 dotenv.config();
 connectDB();
 
@@ -17,6 +17,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/fcm',fcmRoutes);
 
 const PORT = process.env.PORT || 5000;
 
