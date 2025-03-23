@@ -7,8 +7,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 import CONFIG from '../config';
 
 const categoryColors = {
@@ -21,27 +23,36 @@ const categoryColors = {
 const StudentDashboard = ({ navigation }) => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [canAddNotices, setCanAddNotices] = useState(false); 
+  const [refreshing, setRefreshing] = useState(false);
+  const [canAddNotices, setCanAddNotices] = useState(false);
 
   useEffect(() => {
     fetchRecentNotices();
     checkNoticePermission();
+
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={logoutHandler} style={styles.logoutButton}>
+          <MaterialIcons name="logout" size={24} color="black" />
+        </TouchableOpacity>
+      ),
+    });
   }, []);
 
-  const fetchRecentNotices = async () => {
-    setLoading(true);
+  const fetchRecentNotices = async (isRefreshing = false) => {
+    if (!isRefreshing) setLoading(true);
+    else setRefreshing(true);
+
     try {
       const token = await AsyncStorage.getItem('authToken');
       const year = await AsyncStorage.getItem('studentYear');
       const section = await AsyncStorage.getItem('studentSection');
-  
-      console.log("Fetching Notices with:", { year, section, token });
-  
+
       if (!token || !year || !section) {
         console.error("Missing auth details or student info");
         return;
       }
-  
+
       const response = await fetch(
         `${CONFIG.BASE_URL}/api/notices?year=${year}&section=${section}`,
         {
@@ -49,10 +60,9 @@ const StudentDashboard = ({ navigation }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
+
       const data = await response.json();
-      console.log("API Response:", data);
-  
+
       if (response.ok) {
         const sortedNotices = data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -64,10 +74,10 @@ const StudentDashboard = ({ navigation }) => {
     } catch (error) {
       console.error("Error fetching notices:", error);
     }
-    setLoading(false);
+
+    if (!isRefreshing) setLoading(false);
+    setRefreshing(false);
   };
-  
-  
 
   const checkNoticePermission = async () => {
     try {
@@ -82,9 +92,7 @@ const StudentDashboard = ({ navigation }) => {
         `${CONFIG.BASE_URL}/api/user/check-notice-permission/${studentId}`,
         {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -97,6 +105,11 @@ const StudentDashboard = ({ navigation }) => {
     } catch (error) {
       console.error('Error checking permission:', error);
     }
+  };
+
+  const logoutHandler = async () => {
+    await AsyncStorage.removeItem('authToken');
+    navigation.replace('Login'); 
   };
 
   const handleNoticePress = (notice) => {
@@ -138,6 +151,9 @@ const StudentDashboard = ({ navigation }) => {
             keyExtractor={(item) => item._id}
             renderItem={renderNoticeItem}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={() => fetchRecentNotices(true)} />
+            }
           />
         )}
         <TouchableOpacity
@@ -284,6 +300,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  logoutButton: {
+    marginRight: 15,
   },
 });
 

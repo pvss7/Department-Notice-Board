@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const FacultyDashboard = () => {
   const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={logoutHandler} style={styles.logoutButton}>
+          <MaterialIcons name="logout" size={24} color="black" />
+        </TouchableOpacity>
+      ),
+    });
+  }, []);
+
+  const logoutHandler = async () => {
+    await AsyncStorage.removeItem('authToken');
+    navigation.replace('Login');
+  };
 
   return (
     <View style={styles.container}>
@@ -103,6 +120,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#333',
+  },
+  logoutButton: {
+    marginRight: 15,
   },
 });
 

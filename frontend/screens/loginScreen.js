@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config/firebase'; // Ensure correct Firebase import
+import { auth } from '../config/firebase'; 
 import CONFIG from '../config';
+import { registerForPushNotificationsAsync } from '../utils/notifications'; // Import push notification function
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -36,7 +37,7 @@ const LoginScreen = () => {
       });
 
       const data = await response.json();
-      console.log('Login Response:', data); // Debugging
+      console.log('Login Response:', data);
 
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
@@ -47,12 +48,11 @@ const LoginScreen = () => {
         await AsyncStorage.setItem('authToken', token);
         await AsyncStorage.setItem('userRole', user.role);
         await AsyncStorage.setItem('userEmail', user.email);
-        await AsyncStorage.setItem('userId', user._id); // ✅ Ensure ID is stored
+        await AsyncStorage.setItem('userId', user._id); 
 
         console.log('Stored userEmail:', user.email);
         console.log('Stored Id:', user._id);
 
-        // Store student-specific data (year and section) if user is a student
         if (user.role === 'student') {
           await AsyncStorage.setItem('studentYear', user.year || '');
           await AsyncStorage.setItem('studentSection', user.section || '');
@@ -60,24 +60,27 @@ const LoginScreen = () => {
           console.log('Stored Student Section:', user.section);
         }
 
-        // 🔍 Verify `userId` immediately after storing
+        // Verify stored userId
         const storedUserId = await AsyncStorage.getItem('userId');
         console.log('Retrieved User ID:', storedUserId);
 
         if (!storedUserId) {
           throw new Error('Failed to store User ID in AsyncStorage');
         }
+
+        // Register for push notifications after login
+        await registerForPushNotificationsAsync(user._id);
+
+        // Navigate based on role
+        if (user.role === 'admin') {
+          navigation.replace('AdminDashboard');
+        } else if (user.role === 'faculty') {
+          navigation.replace('FacultyDashboard');
+        } else {
+          navigation.replace('StudentDashboard');
+        }
       } else {
         throw new Error('No token received from server.');
-      }
-
-      // Navigate based on role
-      if (user.role === 'admin') {
-        navigation.replace('AdminDashboard');
-      } else if (user.role === 'faculty') {
-        navigation.replace('FacultyDashboard');
-      } else {
-        navigation.replace('StudentDashboard');
       }
     } catch (error) {
       console.error('Login Error:', error);
@@ -89,9 +92,8 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* College Logo */}
       <Image
-        source={require('../assets/college-logo.jpg')} // Replace with the correct path
+        source={require('../assets/college-logo.jpg')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -142,8 +144,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   logo: {
-    width: 150, // Medium size, adjust if needed
-    height: 135, // Maintains aspect ratio
+    width: 150,
+    height: 135,
     marginBottom: 20,
   },
   title: {

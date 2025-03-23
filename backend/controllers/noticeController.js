@@ -1,11 +1,13 @@
 const Notice = require('../models/notice');
-const FCMToken = require('../models/fcmTokenModel');
-const admin = require('../config/firebase'); // Firebase Admin SDK setup
+const ExpoPushToken = require('../models/expoPushTokenModel'); // Updated Model
+const { Expo } = require('expo-server-sdk'); // Import Expo SDK
+
+let expo = new Expo();  
 
 exports.createNotice = async (req, res) => {
   console.log('Received Body:', req.body);
   try {
-    const { title, content, category, year, sections, fileUrl } = req.body;
+    const { title, content, category, year, sections, fileUrl, author } = req.body;
 
     // Ensure required fields are present
     if (!title || !content || !category) {
@@ -30,36 +32,40 @@ exports.createNotice = async (req, res) => {
       year: category === 'Class' ? year : null,
       sections: category === 'Class' ? finalSections : null,
       fileUrl: fileUrl || null,
-      author: req.body.author, // Ensure this is saved
+      author,
     });
 
     await newNotice.save();
 
-    // Fetch relevant FCM tokens based on category
+    // Fetch relevant Expo push tokens based on category
     let tokens;
     if (category === 'Class') {
-      // Fetch tokens of students in the specific year & section
-      tokens = await FCMToken.find({ year, section: { $in: finalSections } }).select('token');
+      tokens = await ExpoPushToken.find({ year, section: { $in: finalSections } }).select('expoPushToken');
     } else {
-      // Fetch all users' tokens for general/event notices
-      tokens = await FCMToken.find().select('token');
+      tokens = await ExpoPushToken.find().select('expoPushToken');
     }
+    console.log('🔍 Retrieved Tokens:', tokens);
+
+    // Format tokens properly for Expo Push API
+    const messages = tokens
+      .filter(token => token.expoPushToken) // Ensure only valid tokens are used
+      .map(token => ({
+        to: token.expoPushToken,
+        sound: 'default',
+        title: '📢 New Notice Posted!',
+        body: `${title} - ${content.substring(0, 50)}...`, // Short preview
+        data: { screen: 'NoticeScreen', noticeId: newNotice._id },
+      }));
+
+    console.log('📨 Notifications Payload:', messages);
 
     // Send push notification if there are tokens
-    if (tokens.length > 0) {
-      const tokenList = tokens.map((t) => t.token);
-
-      const message = {
-        notification: {
-          title: '📢 New Notice Posted!',
-          body: `${title} - ${content.substring(0, 50)}...`, // Short preview
-        },
-        tokens: tokenList,
-      };
-
-      admin.messaging().sendEachForMulticast(message)
-        .then((response) => console.log('📲 Push Notification Sent:', response))
-        .catch((error) => console.error('⚠️ FCM Error:', error));
+    if (messages.length > 0) {
+      let chunks = expo.chunkPushNotifications(messages);
+      for (let chunk of chunks) {
+        await expo.sendPushNotificationsAsync(chunk);
+      }
+      console.log('📲 Expo Push Notification Sent');
     }
 
     res.status(201).json({ message: 'Notice created and notifications sent', newNotice });
@@ -100,7 +106,7 @@ exports.getNotices = async (req, res) => {
       "4": "4th Year"
     };
 
-    const formattedYear = yearMapping[year]; // Convert received year to proper format
+    const formattedYear = yearMapping[year];
     if (!formattedYear) {
       return res.status(400).json({ message: 'Invalid year' });
     }

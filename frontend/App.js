@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { registerForPushNotificationsAsync, setupNotificationListeners } from './utils/notifications';
+import { AsyncStorage } from '@react-native-async-storage/async-storage';
 import WelcomeScreen from './screens/welcomeScreen';
 import LoginScreen from './screens/loginScreen';
 import SignupScreen from './screens/signupScreen';
@@ -23,14 +25,23 @@ import AllStudentNotices from './screens/allStudentNotices';
 const Stack = createStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    async function setupNotifications() {
+      const userId = await AsyncStorage.getItem('userId'); // Ensure userId is available
+      if (userId) {
+        await registerForPushNotificationsAsync(userId);
+      } else {
+        console.log('❌ No user ID found, skipping push token registration.');
+      }
+    }
+
+    setupNotifications();
+    setupNotificationListeners();
+  }, []);
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Welcome">
-        <Stack.Screen
-          name="Welcome"
-          component={WelcomeScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
@@ -46,7 +57,7 @@ export default function App() {
         <Stack.Screen name="ViewMyNotices" component={ViewMyNotices} />
         <Stack.Screen name="ViewNotices" component={ViewNotices} />
         <Stack.Screen name="ComplaintDetails" component={ComplaintDetails} />
-        <Stack.Screen name="PermissionControl" component={PermissionControl}/>
+        <Stack.Screen name="PermissionControl" component={PermissionControl} />
         <Stack.Screen name="AllStudentNotices" component={AllStudentNotices} />
       </Stack.Navigator>
     </NavigationContainer>

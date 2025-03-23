@@ -57,7 +57,6 @@ router.post(
     next();
   },
   authenticate,
-  allowRoles('admin', 'faculty'),
   createNotice
 );
 

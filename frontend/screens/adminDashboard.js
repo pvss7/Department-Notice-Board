@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const AdminDashboard = () => {
   const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={logoutHandler} style={styles.logoutButton}>
+          <MaterialIcons name="logout" size={24} color="black" />
+        </TouchableOpacity>
+      ),
+    });
+  }, []);
+
+  const logoutHandler = async () => {
+    await AsyncStorage.removeItem('authToken');
+    navigation.replace('Login');
+  };
 
   const options = [
     {
@@ -95,6 +112,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
+  },
+  logoutButton: {
+    marginRight: 15,
   },
 });
 
