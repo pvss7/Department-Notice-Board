@@ -38,7 +38,10 @@ export async function registerForPushNotificationsAsync(userId) {
 
   console.log('📌 Final permission status:', finalStatus);
   if (finalStatus !== 'granted') {
-    Alert.alert('Permission Required', 'Push notifications need permission to work.');
+    Alert.alert(
+      'Permission Required',
+      'Push notifications need permission to work.'
+    );
     return;
   }
 
@@ -73,7 +76,6 @@ export async function registerForPushNotificationsAsync(userId) {
   }
 }
 
-
 async function sendTokenToBackend(userId, token) {
   try {
     const authToken = await AsyncStorage.getItem('authToken');
@@ -84,19 +86,26 @@ async function sendTokenToBackend(userId, token) {
     }
 
     if (!token) {
-      console.error('❌ Attempting to send a null push token to backend, skipping.');
+      console.error(
+        '❌ Attempting to send a null push token to backend, skipping.'
+      );
       return;
     }
 
-    console.log('📤 Sending Push Token to Backend:', token);
+    // Log the exact payload we're sending
+    const payload = { token: token };
+    console.log(
+      '📤 Sending Push Token to Backend - Full payload:',
+      JSON.stringify(payload)
+    );
 
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
+        Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ userId, token }),  // Ensure `userId` is also sent
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
@@ -105,8 +114,6 @@ async function sendTokenToBackend(userId, token) {
     console.error('🔥 Error saving push token:', error);
   }
 }
-
-  
 
 // Function to listen for incoming notifications
 export function setupNotificationListeners() {

@@ -7,7 +7,11 @@ exports.saveExpoPushToken = async (req, res) => {
   try {
     console.log('📩 Received request to save push token');
 
-    const { token } = req.body;
+    // Log the EXACT request body for debugging
+    console.log('📦 Full request body:', JSON.stringify(req.body));
+
+    // NO destructuring - get the token directly
+    const token = req.body.token;
     const userId = req.user?.id;
 
     console.log('📌 Received Token:', token);
@@ -23,22 +27,38 @@ exports.saveExpoPushToken = async (req, res) => {
       return res.status(400).json({ message: 'Invalid Expo Push Token' });
     }
 
-    // Check if this token already exists for the user
-    let existingToken = await ExpoPushToken.findOne({ userId });
+    // First check if the token already exists
+    try {
+      const existingToken = await ExpoPushToken.findOne({
+        expoPushToken: token,
+      });
 
-    if (existingToken) {
-      existingToken.expoPushToken = token; // Update existing token
-      await existingToken.save();
-      console.log('✅ Updated existing push token');
-    } else {
-      await ExpoPushToken.create({ userId, expoPushToken: token });
-      console.log('✅ New push token saved');
+      if (existingToken) {
+        console.log('ℹ️ Token already exists, skipping insertion:', token);
+        return res.json({ message: 'Expo Push Token already exists' });
+      }
+
+      // Token doesn't exist, so save it
+      await ExpoPushToken.findOneAndUpdate(
+        { userId },
+        {
+          userId,
+          expoPushToken: token,
+        },
+        { upsert: true, new: true }
+      );
+
+      console.log('✅ Token saved successfully for user:', userId);
+      return res.json({ message: 'Expo Push Token saved successfully' });
+    } catch (dbError) {
+      console.error('💾 Database error:', dbError);
+      throw dbError; // Re-throw to be caught by the outer catch
     }
-
-    res.json({ message: 'Expo Push Token saved successfully' });
-
   } catch (error) {
     console.error('🔥 Error saving Expo Push Token:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+    return res.status(500).json({
+      message: 'Internal server error',
+      error: error.message,
+    });
   }
 };

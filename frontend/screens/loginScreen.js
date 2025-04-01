@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../config/firebase'; 
+import { auth } from '../config/firebase';
 import CONFIG from '../config';
 import { registerForPushNotificationsAsync } from '../utils/notifications'; // Import push notification function
 
@@ -30,12 +30,11 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${CONFIG.BASE_URL}/api/auth/login`, {
+      const response = await fetch('http://192.168.1.5:5002/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
       console.log('Login Response:', data);
 
@@ -48,7 +47,7 @@ const LoginScreen = () => {
         await AsyncStorage.setItem('authToken', token);
         await AsyncStorage.setItem('userRole', user.role);
         await AsyncStorage.setItem('userEmail', user.email);
-        await AsyncStorage.setItem('userId', user._id); 
+        await AsyncStorage.setItem('userId', user._id);
 
         console.log('Stored userEmail:', user.email);
         console.log('Stored Id:', user._id);

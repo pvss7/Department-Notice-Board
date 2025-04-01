@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { registerForPushNotificationsAsync, setupNotificationListeners } from './utils/notifications';
+import {
+  registerForPushNotificationsAsync,
+  setupNotificationListeners,
+} from './utils/notifications';
 import { AsyncStorage } from '@react-native-async-storage/async-storage';
 import WelcomeScreen from './screens/welcomeScreen';
 import LoginScreen from './screens/loginScreen';
@@ -21,6 +24,9 @@ import ViewNotices from './screens/viewNotices';
 import ComplaintDetails from './screens/complaintDetails';
 import PermissionControl from './screens/permissionControl';
 import AllStudentNotices from './screens/allStudentNotices';
+import FacultyInformation from './screens/facultyInformation';
+import ResourcesScreen from './screens/resourcesScreen';
+import BusRoutes from './screens/busRoutes';
 
 const Stack = createStackNavigator();
 
@@ -41,7 +47,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Welcome">
-        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="Welcome"
+          component={WelcomeScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
@@ -59,6 +69,12 @@ export default function App() {
         <Stack.Screen name="ComplaintDetails" component={ComplaintDetails} />
         <Stack.Screen name="PermissionControl" component={PermissionControl} />
         <Stack.Screen name="AllStudentNotices" component={AllStudentNotices} />
+        <Stack.Screen
+          name="FacultyInformation"
+          component={FacultyInformation}
+        />
+        <Stack.Screen name="ResourcesScreen" component={ResourcesScreen} />
+        <Stack.Screen name="BusRoutes" component={BusRoutes} />
       </Stack.Navigator>
     </NavigationContainer>
   );

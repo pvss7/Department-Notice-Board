@@ -2,26 +2,34 @@ const Notice = require('../models/notice');
 const ExpoPushToken = require('../models/expoPushTokenModel'); // Updated Model
 const { Expo } = require('expo-server-sdk'); // Import Expo SDK
 
-let expo = new Expo();  
+let expo = new Expo();
 
 exports.createNotice = async (req, res) => {
   console.log('Received Body:', req.body);
   try {
-    const { title, content, category, year, sections, fileUrl, author } = req.body;
+    const { title, content, category, year, sections, fileUrl, author } =
+      req.body;
 
     // Ensure required fields are present
     if (!title || !content || !category) {
-      return res.status(400).json({ message: 'Title, content, and category are required' });
+      return res
+        .status(400)
+        .json({ message: 'Title, content, and category are required' });
     }
 
     // Validate year & section for Section-Specific Notices
     let finalSections = null;
     if (category === 'Class') {
-      if (!year) return res.status(400).json({ message: 'Year is required for section-specific notices' });
+      if (!year)
+        return res
+          .status(400)
+          .json({ message: 'Year is required for section-specific notices' });
       if (!sections || !Array.isArray(sections))
         return res.status(400).json({ message: 'Sections must be an array' });
 
-      finalSections = sections.includes('All') ? ['A', 'B', 'C', 'D', 'E'] : sections;
+      finalSections = sections.includes('All')
+        ? ['A', 'B', 'C', 'D', 'E']
+        : sections;
     }
 
     // Save notice to database
@@ -40,7 +48,10 @@ exports.createNotice = async (req, res) => {
     // Fetch relevant Expo push tokens based on category
     let tokens;
     if (category === 'Class') {
-      tokens = await ExpoPushToken.find({ year, section: { $in: finalSections } }).select('expoPushToken');
+      tokens = await ExpoPushToken.find({
+        year,
+        section: { $in: finalSections },
+      }).select('expoPushToken');
     } else {
       tokens = await ExpoPushToken.find().select('expoPushToken');
     }
@@ -48,8 +59,8 @@ exports.createNotice = async (req, res) => {
 
     // Format tokens properly for Expo Push API
     const messages = tokens
-      .filter(token => token.expoPushToken) // Ensure only valid tokens are used
-      .map(token => ({
+      .filter((token) => token.expoPushToken) // Ensure only valid tokens are used
+      .map((token) => ({
         to: token.expoPushToken,
         sound: 'default',
         title: '📢 New Notice Posted!',
@@ -68,7 +79,9 @@ exports.createNotice = async (req, res) => {
       console.log('📲 Expo Push Notification Sent');
     }
 
-    res.status(201).json({ message: 'Notice created and notifications sent', newNotice });
+    res
+      .status(201)
+      .json({ message: 'Notice created and notifications sent', newNotice });
   } catch (error) {
     console.error('⚠️ Error creating notice:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -100,10 +113,10 @@ exports.getNotices = async (req, res) => {
 
     // Convert numeric year into "1st Year", "2nd Year", etc.
     const yearMapping = {
-      "1": "1st Year",
-      "2": "2nd Year",
-      "3": "3rd Year",
-      "4": "4th Year"
+      1: '1st Year',
+      2: '2nd Year',
+      3: '3rd Year',
+      4: '4th Year',
     };
 
     const formattedYear = yearMapping[year];
@@ -114,8 +127,8 @@ exports.getNotices = async (req, res) => {
     let query = {
       $or: [
         { category: { $ne: 'Class' } }, // Fetch non-class notices (Events, General, etc.)
-        { year: formattedYear, sections: section } // Fetch class-specific notices
-      ]
+        { year: formattedYear, sections: section }, // Fetch class-specific notices
+      ],
     };
 
     console.log('MongoDB Query:', JSON.stringify(query, null, 2));

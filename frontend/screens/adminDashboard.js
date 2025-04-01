@@ -41,7 +41,7 @@ const AdminDashboard = () => {
     },
     {
       title: 'Faculty Info',
-      screen: 'FacultyInfo',
+      screen: 'FacultyInformation',
       animation: require('../assets/faculty.json'),
     },
     {

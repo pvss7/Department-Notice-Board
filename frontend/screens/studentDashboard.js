@@ -49,7 +49,7 @@ const StudentDashboard = ({ navigation }) => {
       const section = await AsyncStorage.getItem('studentSection');
 
       if (!token || !year || !section) {
-        console.error("Missing auth details or student info");
+        console.error('Missing auth details or student info');
         return;
       }
 
@@ -69,10 +69,10 @@ const StudentDashboard = ({ navigation }) => {
         );
         setNotices(sortedNotices.slice(0, 5));
       } else {
-        console.error("Error fetching notices:", data.message);
+        console.error('Error fetching notices:', data.message);
       }
     } catch (error) {
-      console.error("Error fetching notices:", error);
+      console.error('Error fetching notices:', error);
     }
 
     if (!isRefreshing) setLoading(false);
@@ -82,7 +82,7 @@ const StudentDashboard = ({ navigation }) => {
   const checkNoticePermission = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const studentId = await AsyncStorage.getItem('userId'); 
+      const studentId = await AsyncStorage.getItem('userId');
       if (!token || !studentId) {
         console.error('Missing authentication details');
         return;
@@ -109,7 +109,7 @@ const StudentDashboard = ({ navigation }) => {
 
   const logoutHandler = async () => {
     await AsyncStorage.removeItem('authToken');
-    navigation.replace('Login'); 
+    navigation.replace('Login');
   };
 
   const handleNoticePress = (notice) => {
@@ -152,7 +152,10 @@ const StudentDashboard = ({ navigation }) => {
             renderItem={renderNoticeItem}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={() => fetchRecentNotices(true)} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => fetchRecentNotices(true)}
+              />
             }
           />
         )}
@@ -168,7 +171,7 @@ const StudentDashboard = ({ navigation }) => {
         <View style={styles.row}>
           <DashboardBlock
             title="Faculty Information"
-            onPress={() => navigation.navigate('FacultyInfo')}
+            onPress={() => navigation.navigate('FacultyInformation')}
           />
           <DashboardBlock
             title="Complaints"
@@ -177,12 +180,8 @@ const StudentDashboard = ({ navigation }) => {
         </View>
         <View style={styles.row}>
           <DashboardBlock
-            title="Expired Notices"
-            onPress={() => navigation.navigate('ExpiredNotices')}
-          />
-          <DashboardBlock
             title="Resources"
-            onPress={() => navigation.navigate('Resources')}
+            onPress={() => navigation.navigate('ResourcesScreen')}
           />
         </View>
 
